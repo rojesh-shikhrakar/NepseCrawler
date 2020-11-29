@@ -121,6 +121,26 @@ def CompanyStocksTransactions(SymbolNo,startDate):
 
 
 # In[17]:
+def CompanyStocksTransactions2(SymbolNo,startDate,endDate):
+    url=f"http://www.nepalstock.com.np/company/transactions/{SymbolNo}/0/?startDate={startDate}&endDate={endDate}&_limit=9000000"
+    print("Connecting to %s "%url)
+    http = urllib3.PoolManager()
+    http.addheaders = [('User-agent', 'Mozilla/61.0')]
+    web_page = http.request('GET',url)
+    print("Parsing")
+    soup = BS(web_page.data, 'html5lib')
+    table = soup.find('table')    
+    FloorSheet=[]
+    rows = [row.findAll('td') for row in table.findAll('tr')[1:-2]]
+    if rows == []:
+        print(f"Empty between {startDate} and {endDate}")
+        return None   
+    print("Adding to DataFrame")
+    for row in rows:
+        FloorSheet.append([data.text.strip() for data in row])
+    FloorSheetdf = pd.DataFrame(FloorSheet[1:],columns=FloorSheet[0])
+    #FloorSheetdf['Date']=pd.to_datetime(FloorSheetdf['Contract No'], format='%Y%m%d%H%M%f', errors='ignore')
+    return FloorSheetdf
 
 
 
